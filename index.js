@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
@@ -18,8 +19,18 @@ async function run(){
         await client.connect();
         const serviceCollection = client.db('nevica').collection('service');
 
+        app.post('/login', async(req, res)=>{
+            const user =req.body;
+            const accessToken =jwt.sign(user, process.env.ACESS_TOKEN_SEKRITE,{
+                expiresIn: '1d'
+            });
+            res.send(accessToken);
+        })
+
+
         app.get('/service', async(req, res)=>{
-            const query= {};
+            const email = req.query.email;
+            const query= {email: email};
             const cursor= serviceCollection.find(query);
             const services= await cursor.toArray();
             res.send(services);
